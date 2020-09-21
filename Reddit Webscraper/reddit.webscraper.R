@@ -5,7 +5,6 @@ library(xml2)
 library(lubridate)
 #XPath is the only locator that can iterate DOM upwards. This lets you use selectors like //div[.//h5[text()='header']], 
 #which means that you can take div, which contains h5 with text "header."
-#/comments/iuq94w/how_have_5_whole_months_passed/
 
 
 #This function fetches data from the HTML using xpath
@@ -100,7 +99,7 @@ switch.second.window <- function()
 }
 
 
-# Main Body ---------------------------------------------------------------
+# Main Body 1: From Main Page ---------------------------------------------------------------
 reddit.urls <- readr::read_csv("reddit.url.data.csv") %>%
   dplyr::select(2)
 
@@ -114,7 +113,7 @@ reddit.html <- remote_driver$getPageSource()[[1]] %>%
 bottomElem <- remote_driver$findElement("css", "body")
 bottomElem$sendKeysToElement(list(key = "end"))
 
-i <- 330
+i <- 1
 
 #Declared here for ease of understanding, not needed
 #These data frames are used to store respective data points.
@@ -134,18 +133,11 @@ repeat
 
   navigate.to.webpage(remote_driver, discussion.url)
   
-  #discussion.html <- remote_driver$getPageSource()[[1]] %>%
-    #::read_html() #This is my major slowdown, reading the HTML of every single post
-  #Don't see a way around it
   discussion.html <- remote_driver$getPageSource()[[1]] %>%
     xml2::read_html()
   
-  tryCatch({
-    url.id <- strsplit(discussion.url, "/")[[1]][[7]]
-  },
-  finally = {
-    next
-  })
+  url.id <- strsplit(discussion.url, "/")[[1]][[7]]
+    
   discussion.data <- get.discussion.data(discussion.html, url.id)
  
   #Bind data together
@@ -155,7 +147,7 @@ repeat
   
   i <- i + 1
   print(i)
-  if (i %% 19 == 0)
+  if (i %% 20 == 0) #25 posts a page, loading is often slower, allows leeway. tryCatch proves to have some issues
   {
     switch.first.window()
     
